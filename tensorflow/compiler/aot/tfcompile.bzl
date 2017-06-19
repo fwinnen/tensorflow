@@ -23,7 +23,7 @@ def tf_library(name, graph, config,
                cpp_class=None, gen_test=True, gen_benchmark=True,
                visibility=None, testonly=None,
                tfcompile_flags=None,
-               tfcompile_tool="//tensorflow/compiler/aot:tfcompile",
+               tfcompile_tool=str(Label("//tensorflow/compiler/aot:tfcompile")),
                deps=None, tags=None):
   """Runs tfcompile to compile a TensorFlow graph into executable code.
 
@@ -107,9 +107,9 @@ def tf_library(name, graph, config,
             out_nodes_file,
         ] + freeze_saver_srcs,
         outs=[freeze_file],
-        cmd=("$(location //tensorflow/python/tools:freeze_graph)" +
+        cmd=("$(location str(Label(//tensorflow/python/tools:freeze_graph)))" +
              freeze_args),
-        tools=["//tensorflow/python/tools:freeze_graph"],
+        tools=["str(Label(//tensorflow/python/tools:freeze_graph))"],
         tags=tags,
     )
     tfcompile_graph = freeze_file
@@ -163,19 +163,19 @@ def tf_library(name, graph, config,
       testonly=testonly,
       deps = [
           # TODO(cwhipkey): only depend on kernel code that the model actually needed.
-          "//tensorflow/compiler/tf2xla/kernels:gather_op_kernel_float_int32",
-          "//tensorflow/compiler/tf2xla/kernels:gather_op_kernel_float_int64",
-          "//tensorflow/compiler/tf2xla/kernels:index_ops_kernel_argmax_float_1d",
-          "//tensorflow/compiler/tf2xla/kernels:index_ops_kernel_argmax_float_2d",
-          "//tensorflow/compiler/aot:runtime",
-          "//tensorflow/compiler/tf2xla:xla_local_runtime_context",
-          "//tensorflow/compiler/xla/service/cpu:runtime_conv2d",
-          "//tensorflow/compiler/xla/service/cpu:runtime_matmul",
-          "//tensorflow/compiler/xla/service/cpu:runtime_single_threaded_conv2d",
-          "//tensorflow/compiler/xla/service/cpu:runtime_single_threaded_matmul",
-          "//tensorflow/compiler/xla:executable_run_options",
-          "//third_party/eigen3",
-          "//tensorflow/core:framework_lite",
+          str(Label("//tensorflow/compiler/tf2xla/kernels:gather_op_kernel_float_int32")),
+          str(Label("//tensorflow/compiler/tf2xla/kernels:gather_op_kernel_float_int64")),
+          str(Label("//tensorflow/compiler/tf2xla/kernels:index_ops_kernel_argmax_float_1d")),
+          str(Label("//tensorflow/compiler/tf2xla/kernels:index_ops_kernel_argmax_float_2d")),
+          str(Label("//tensorflow/compiler/aot:runtime")),
+          str(Label("//tensorflow/compiler/tf2xla:xla_local_runtime_context")),
+          str(Label("//tensorflow/compiler/xla/service/cpu:runtime_conv2d")),
+          str(Label("//tensorflow/compiler/xla/service/cpu:runtime_matmul")),
+          str(Label("//tensorflow/compiler/xla/service/cpu:runtime_single_threaded_conv2d")),
+          str(Label("//tensorflow/compiler/xla/service/cpu:runtime_single_threaded_matmul")),
+          str(Label("//tensorflow/compiler/xla:executable_run_options")),
+          str(Label("//third_party/eigen3")),
+          str(Label("//tensorflow/core:framework_lite")),
           ] + (deps or []),
       tags=tags,
   )
@@ -200,12 +200,12 @@ def tf_library(name, graph, config,
         name=("gen_" + test_name),
         testonly=1,
         srcs=[
-            "//tensorflow/compiler/aot:test.cc",
+            str(Label("//tensorflow/compiler/aot:test.cc")),
             header_file,
         ],
         outs=[test_file],
         cmd=("sed " + sed_replace +
-             " $(location //tensorflow/compiler/aot:test.cc) " +
+             " $(location str(Label(//tensorflow/compiler/aot:test.cc))) " +
              "> $(OUTS)"),
         tags=tags,
     )
@@ -216,13 +216,13 @@ def tf_library(name, graph, config,
         srcs=[test_file],
         deps=[
             ":" + name,
-            "//tensorflow/compiler/tf2xla:xla_local_runtime_context",
-            "//tensorflow/compiler/aot:runtime",
-            "//tensorflow/compiler/aot:tf_library_test_main",
-            "//tensorflow/compiler/xla:executable_run_options",
-            "//third_party/eigen3",
-            "//tensorflow/core:lib",
-            "//tensorflow/core:test",
+            str(Label("//tensorflow/compiler/tf2xla:xla_local_runtime_context")),
+            str(Label("//tensorflow/compiler/aot:runtime")),
+            str(Label("//tensorflow/compiler/aot:tf_library_test_main")),
+            str(Label("//tensorflow/compiler/xla:executable_run_options")),
+            str(Label("//third_party/eigen3")),
+            str(Label("//tensorflow/core:lib")),
+            str(Label("//tensorflow/core:test")),
             ],
         tags=tags,
     )
@@ -230,8 +230,8 @@ def tf_library(name, graph, config,
   if gen_benchmark:
     benchmark_name = name + "_benchmark"
     benchmark_file = benchmark_name + ".cc"
-    benchmark_main = ("//tensorflow/compiler/aot:" +
-        "benchmark_main.template")
+    benchmark_main = (str(Label("//tensorflow/compiler/aot:" +
+        "benchmark_main.template")))
 
     # Rule to rewrite benchmark.cc to produce the benchmark_file.
     native.genrule(
@@ -262,13 +262,13 @@ def tf_library(name, graph, config,
         linkopts = if_android(["-pie", "-s"]),
         deps=[
             ":" + name,
-            "//tensorflow/compiler/tf2xla:xla_local_runtime_context",
-            "//tensorflow/compiler/aot:benchmark",
-            "//tensorflow/compiler/aot:runtime",
-            "//tensorflow/compiler/xla:executable_run_options",
-            "//third_party/eigen3",
+            str(Label("//tensorflow/compiler/tf2xla:xla_local_runtime_context")),
+            str(Label("//tensorflow/compiler/aot:benchmark")),
+            str(Label("//tensorflow/compiler/aot:runtime")),
+            str(Label("//tensorflow/compiler/xla:executable_run_options")),
+            str(Label("//third_party/eigen3")),
         ] + if_android([
-            "//tensorflow/compiler/aot:benchmark_extra_android",
+            str(Label("//tensorflow/compiler/aot:benchmark_extra_android")),
         ]),
         tags=tags,
     )
@@ -279,11 +279,11 @@ def target_llvm_triple():
   # TODO(toddw): Add target_triple for other targets.  For details see:
   # http://llvm.org/docs/doxygen/html/Triple_8h_source.html
   return select({
-      "//tensorflow:android_armeabi": "armv5-none-android",
-      "//tensorflow:android_arm": "armv7-none-android",
-      "//tensorflow:android_arm64": "aarch64-none-android",
-      "//tensorflow:android_x86": "i686-none-android",
-      "//tensorflow:linux_ppc64le": "ppc64le-ibm-linux-gnu",
-      "//tensorflow:darwin": "x86_64-none-darwin",
+      str(Label("//tensorflow:android_armeabi": "armv5-none-android")),
+      str(Label("//tensorflow:android_arm": "armv7-none-android")),
+      str(Label("//tensorflow:android_arm64": "aarch64-none-android")),
+      str(Label("//tensorflow:android_x86": "i686-none-android")),
+      str(Label("//tensorflow:linux_ppc64le": "ppc64le-ibm-linux-gnu")),
+      str(Label("//tensorflow:darwin": "x86_64-none-darwin")),
       "//conditions:default": "x86_64-pc-linux",
   })
