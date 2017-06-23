@@ -239,6 +239,7 @@ ifeq ($(TARGET),ANDROID)
 -march=armv7-a \
 -mfloat-abi=softfp \
 -mfpu=neon \
+-fPIC \
 -fPIE
 
 	INCLUDES = \
@@ -267,6 +268,7 @@ ifeq ($(TARGET),ANDROID)
 -march=armv7-a \
 -L$(MAKEFILE_DIR)/gen/protobuf/lib \
 -L$(NDK_ROOT)/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a \
+-fPIC \
 -fPIE \
 -pie \
 -v
