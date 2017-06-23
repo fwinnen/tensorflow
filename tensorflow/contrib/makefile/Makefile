@@ -243,8 +243,8 @@ ifeq ($(TARGET),ANDROID)
 
 	INCLUDES = \
 -I$(NDK_ROOT)/sources/android/support/include \
--I$(NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/4.9/include \
--I$(NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi/include \
+-I$(NDK_ROOT)/sources/cxx-stl/llvm-libc++/include \
+-I$(NDK_ROOT)/sources/cxx-stl/llvm-libc++abi/include \
 -I. \
 -I$(MAKEFILE_DIR)/downloads/ \
 -I$(MAKEFILE_DIR)/downloads/eigen \
@@ -254,7 +254,8 @@ ifeq ($(TARGET),ANDROID)
 -I$(PBTGENDIR)
 
 	LIBS := \
--lgnustl_static \
+-lc++_static \
+-lc++abi \
 -lprotobuf \
 -llog \
 -lz \
@@ -265,7 +266,7 @@ ifeq ($(TARGET),ANDROID)
 	LDFLAGS := \
 -march=armv7-a \
 -L$(MAKEFILE_DIR)/gen/protobuf/lib \
--L$(NDK_ROOT)/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi-v7a \
+-L$(NDK_ROOT)/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a \
 -fPIE \
 -pie \
 -v
