@@ -62,7 +62,7 @@ HOST_GENDIR := $(MAKEFILE_DIR)/gen/host_obj/
 
 # Settings for the host compiler.
 HOST_CXX := $(CC_PREFIX) gcc
-HOST_CXXFLAGS := --std=c++11
+HOST_CXXFLAGS := --std=c++11 -fPIC 
 HOST_LDOPTS :=
 ifeq ($(HAS_GEN_HOST_PROTOC),true)
 	HOST_LDOPTS += -L$(MAKEFILE_DIR)/gen/protobuf-host/lib
@@ -239,8 +239,7 @@ ifeq ($(TARGET),ANDROID)
 -march=armv7-a \
 -mfloat-abi=softfp \
 -mfpu=neon \
--fPIC \
--fPIE
+-fPIC 
 
 	INCLUDES = \
 -I$(NDK_ROOT)/sources/android/support/include \
@@ -269,8 +268,6 @@ ifeq ($(TARGET),ANDROID)
 -L$(MAKEFILE_DIR)/gen/protobuf/lib \
 -L$(NDK_ROOT)/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a \
 -fPIC \
--fPIE \
--pie \
 -v
 
 	AR := $(NDK_ROOT)/toolchains/arm-linux-androideabi-4.9/prebuilt/$(OS_PATH)-x86_64/bin/arm-linux-androideabi-ar
