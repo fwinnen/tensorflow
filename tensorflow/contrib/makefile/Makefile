@@ -143,7 +143,7 @@ ifneq ($(TARGET),ANDROID)
   OPTFLAGS += -march=native
 endif
 
-CXXFLAGS := --std=c++11 -DIS_SLIM_BUILD -fno-exceptions -DNDEBUG $(OPTFLAGS)
+CXXFLAGS := --std=c++11 -DIS_SLIM_BUILD -DSELECTIVE_REGISTRATION -DSUPPORT_SELECTIVE_REGISTRATION -fno-exceptions -DNDEBUG $(OPTFLAGS)
 LDFLAGS := \
 -L/usr/local/lib
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
