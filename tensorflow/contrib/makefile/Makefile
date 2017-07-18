@@ -140,10 +140,12 @@ CXX := $(CC_PREFIX) gcc
 OPTFLAGS := -O2
 
 ifneq ($(TARGET),ANDROID)
-  OPTFLAGS += -march=native
+  ifneq ($(TARGET),PI)
+    OPTFLAGS += -march=native
+  endif
 endif
 
-CXXFLAGS := --std=c++11 -DIS_SLIM_BUILD -fno-exceptions -DNDEBUG $(OPTFLAGS)
+CXXFLAGS := --std=c++11 -DIS_SLIM_BUILD -fno-exceptions -DSELECTIVE_REGISTRATION -DSUPPORT_SELECTIVE_REGISTRATION -DNDEBUG $(OPTFLAGS)
 LDFLAGS := \
 -L/usr/local/lib
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
@@ -165,7 +167,6 @@ INCLUDES += -I/usr/local/include
 LIBS := \
 -lstdc++ \
 -lprotobuf \
--lz \
 -lm
 
 ifeq ($(HAS_GEN_HOST_PROTOC),true)
@@ -198,12 +199,30 @@ endif
 endif
 # If we're on Linux, also link in the dl library.
 ifeq ($(TARGET),LINUX)
-	LIBS += -ldl -lpthread
+	LIBS += -lz -ldl -lpthread
 endif
 # If we're cross-compiling for the Raspberry Pi, use the right gcc.
 ifeq ($(TARGET),PI)
-	CXXFLAGS += -D__ANDROID_TYPES_SLIM__
-	LDFLAGS := -Wl,--no-whole-archive
+	bin_prefix := ${RASPBERRYPI_CROSS_COMPILE_TOOLCHAIN_PREFIX}
+
+	CC := $(CC_PREFIX) ${RASPBERRYPI_CROSS_COMPILE_TOOLCHAIN_PATH}/${RASPBERRYPI_CROSS_COMPILE_TOOLCHAIN_PREFIX}-gcc
+	CXX := $(CC_PREFIX) ${RASPBERRYPI_CROSS_COMPILE_TOOLCHAIN_PATH}/${RASPBERRYPI_CROSS_COMPILE_TOOLCHAIN_PREFIX}-g++
+
+	CXXFLAGS += \
+--sysroot ${RASPBERRYPI_CROSS_COMPILE_SYSROOT} \
+-D__ANDROID_TYPES_SLIM__ \
+-mcpu=cortex-a53 \
+-mfloat-abi=hard \
+-mfpu=neon-fp-armv8 \
+-mneon-for-64bits \
+-mtune=cortex-a53 \
+-fPIC
+
+	LDFLAGS := -Wl,--no-whole-archive \
+-mcpu=cortex-a53 \
+-L$(MAKEFILE_DIR)/gen/protobuf/lib \
+-fPIC
+
 	LIBS += -ldl -lpthread
 	LIBFLAGS += -Wl,--allow-multiple-definition -Wl,--whole-archive
 endif
