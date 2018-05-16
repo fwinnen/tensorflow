@@ -90,14 +90,14 @@ HOST_LIBS := \
 -lz
 
 # If we're on Linux, also link in the dl library.
-ifeq ($(HOST_OS),LINUX)
-	HOST_LIBS += -ldl -lpthread
-endif
-
+#ifeq ($(HOST_OS),LINUX)
+#	HOST_LIBS += -ldl -lpthread
+#endif
+#
 # If we're on a Pi, link in pthreads and dl
-ifeq ($(HOST_OS),PI)
-	HOST_LIBS += -ldl -lpthread
-endif
+#ifeq ($(HOST_OS),PI)
+#	HOST_LIBS += -ldl -lpthread
+#endif
 
 
 # proto_text is a tool that converts protobufs into a form we can use more
@@ -197,14 +197,14 @@ endif
 	LDFLAGS := -Wl,--no-whole-archive
 endif
 # If we're on Linux, also link in the dl library.
-ifeq ($(TARGET),LINUX)
-	LIBS += -ldl -lpthread
-endif
+#ifeq ($(TARGET),LINUX)
+#	LIBS += -ldl -lpthread
+#endif
 # If we're cross-compiling for the Raspberry Pi, use the right gcc.
 ifeq ($(TARGET),PI)
 	CXXFLAGS += -D__ANDROID_TYPES_SLIM__
 	LDFLAGS := -Wl,--no-whole-archive
-	LIBS += -ldl -lpthread
+	#LIBS += -ldl -lpthread
 	LIBFLAGS += -Wl,--allow-multiple-definition -Wl,--whole-archive
 endif
 
@@ -232,13 +232,13 @@ ifeq ($(TARGET),ANDROID)
 	ifndef NDK_ROOT
     $(error "NDK_ROOT is not defined.")
 	endif
-	CXX := $(CC_PREFIX) $(NDK_ROOT)/toolchains/arm-linux-androideabi-4.9/prebuilt/$(OS_PATH)-x86_64/bin/arm-linux-androideabi-g++
+	CXX := $(CC_PREFIX) $(NDK_ROOT)/toolchains/x86-4.9/prebuilt/$(OS_PATH)-x86_64/bin/i686-linux-android-g++
 	CXXFLAGS +=\
---sysroot $(NDK_ROOT)/platforms/android-21/arch-arm \
+-D__ANDROID_TYPES_SLIM__ \
+-D__ANDROID__ \
+--sysroot $(NDK_ROOT)/platforms/android-21/arch-x86 \
 -Wno-narrowing \
--march=armv7-a \
--mfloat-abi=softfp \
--mfpu=neon \
+-march=i686 \
 -fPIC 
 
 	INCLUDES = \
@@ -261,16 +261,16 @@ ifeq ($(TARGET),ANDROID)
 -lz \
 -lm
 
-	LD := $(NDK_ROOT)/toolchains/arm-linux-androideabi-4.9/prebuilt/$(OS_PATH)-x86_64/arm-linux-androideabi/bin/ld
+	LD := $(NDK_ROOT)/toolchains/x86-4.9/prebuilt/$(OS_PATH)-x86_64/bin/ld
 
 	LDFLAGS := \
--march=armv7-a \
+-march=i686 \
 -L$(MAKEFILE_DIR)/gen/protobuf/lib \
--L$(NDK_ROOT)/sources/cxx-stl/llvm-libc++/libs/armeabi-v7a \
+-L$(NDK_ROOT)/sources/cxx-stl/llvm-libc++/libs/x86 \
 -fPIC \
 -v
 
-	AR := $(NDK_ROOT)/toolchains/arm-linux-androideabi-4.9/prebuilt/$(OS_PATH)-x86_64/bin/arm-linux-androideabi-ar
+	AR := $(NDK_ROOT)/toolchains/x86-4.9/prebuilt/$(OS_PATH)-x86_64/bin/i686-linux-android-ar
 	ARFLAGS := r
 	LIBFLAGS += -Wl,--allow-multiple-definition -Wl,--whole-archive
 
@@ -528,7 +528,7 @@ $(LIB_PATH): $(LIB_OBJS)
 
 $(BENCHMARK_NAME): $(BENCHMARK_OBJS) $(LIB_PATH)
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) \
+	$(CXX) $(CXXFLAGS) -pie $(INCLUDES) \
 	-o $(BENCHMARK_NAME) $(BENCHMARK_OBJS) \
 	$(LIBFLAGS) $(LIB_PATH) $(LDFLAGS) $(LIBS)
 
