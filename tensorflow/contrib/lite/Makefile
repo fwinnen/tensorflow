@@ -75,6 +75,14 @@ tensorflow/contrib/lite/examples/minimal/minimal.cc
 MINIMAL_OBJS := $(addprefix $(OBJDIR), \
 $(patsubst %.cc,%.o,$(patsubst %.c,%.o,$(MINIMAL_SRCS))))
 
+# Kinemic classifier
+KINEMIC_PATH := $(LIBDIR)libtfclassifier-lite.a
+
+KINEMIC_SRCS := \
+tensorflow/contrib/lite/kinemic/TFClassifierLite.cc
+KINEMIC_OBJS := $(addprefix $(OBJDIR), \
+$(patsubst %.cc,%.o,$(patsubst %.c,%.o,$(KINEMIC_SRCS))))
+
 # What sources we want to compile, must be kept in sync with the main Bazel
 # build files.
 
@@ -99,7 +107,8 @@ $(wildcard tensorflow/contrib/lite/*/*test.cc) \
 $(wildcard tensorflow/contrib/lite/*/*/*test.cc) \
 $(wildcard tensorflow/contrib/lite/*/*/*/*test.cc) \
 $(wildcard tensorflow/contrib/lite/kernels/test_util.cc) \
-$(MINIMAL_SRCS)
+$(MINIMAL_SRCS) \
+$(KINEMIC_SRCS)
 # Filter out all the excluded files.
 TF_LITE_CC_SRCS := $(filter-out $(CORE_CC_EXCLUDE_SRCS), $(CORE_CC_ALL_SRCS))
 # File names of the intermediate files target compilation generates.
@@ -118,7 +127,7 @@ $(OBJDIR)%.o: %.c
 	$(CC) $(CCFLAGS) $(INCLUDES) -c $< -o $@
 
 # The target that's compiled if there's no command-line arguments.
-all: $(LIB_PATH)  $(MINIMAL_PATH)
+all: $(LIB_PATH)  $(MINIMAL_PATH)   $(KINEMIC_PATH)
 
 # Gathers together all the objects we've compiled into a single '.a' archive.
 $(LIB_PATH): $(LIB_OBJS)
@@ -130,6 +139,10 @@ $(MINIMAL_PATH): $(MINIMAL_OBJS) $(LIB_PATH)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) \
 	-o $(MINIMAL_PATH) $(MINIMAL_OBJS) \
 	$(LIBFLAGS) $(LIB_PATH) $(LDFLAGS) $(LIBS)
+
+$(KINEMIC_PATH): $(KINEMIC_OBJS) $(LIB_OBJS)
+	@mkdir -p $(dir $@)
+	$(AR) $(ARFLAGS) $(KINEMIC_PATH) $(KINEMIC_OBJS) $(LIB_OBJS)
 
 # Gets rid of all generated files.
 clean:
